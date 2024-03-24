@@ -146,11 +146,11 @@ class Test extends Component{
 const list = [
   {
     article_number: 35472835,
-    model: 'W NIKE TECH HERA',
-    category: 'Sneakers',
+    model: 'NIKE TECH HERA',
+    category: 'footwear',
     price: 110,
     rate: '4.0',
-    url:'https://cdn.4stand.com/large/21/29/2129046b712883c5a8a7caeaad6f1b5bfb0a63d5.jpg',
+    url:'https://a.lmcdn.ru/product/R/T/RTLADH066601_22530133_1_v1.jpg',
   },
   {
     article_number: 12345,
@@ -163,7 +163,7 @@ const list = [
   {
     article_number: 94746353,
     model: 'SELA White T-Shirt',
-    category: 'Tops',
+    category: 'tops',
     price: 5,
     rate: '4.0',
     url:'https://a.lmcdn.ru/product/M/P/MP002XW0P879_22270630_5_v1_2x.jpeg',
@@ -171,17 +171,37 @@ const list = [
   {
     article_number: 124234566,
     model: 'Pullover Tommy Hilfiger',
-    category: 'Tops',
+    category: 'tops',
     price: 200,
     rate: '4.0',
     url:"https://a.lmcdn.ru/product/R/T/RTLADH542501_22687701_1_v1_2x.jpg",
   },
+  {
+    article_number: 1763334566,
+    model: 'Volento Trousers',
+    category: 'trousers',
+    price: 80,
+    rate: '4.0',
+    url:"https://a.lmcdn.ru/img600x866/M/P/MP002XW0PBP1_22321933_1_v1.jpeg",
+  },
+  {
+    article_number: 132453882152,
+    model: 'Covani Loafers',
+    category: 'footwear',
+    price: 50,
+    rate: '4.0',
+    url:'https://a.lmcdn.ru/product/M/P/MP002XW0MUYC_22979224_2_v1.jpg',
+  },
 ];
 function Search(){
+  const categories = Array.from(new Set(list.map(function(item){
+    return item.category;
+  })));
   const[searchTerm, setSearchTerm] = useState('');
   const[permTerm, setPermTerm] = useState('');
+  const[filterTerm,setFilterTerm] = useState('');
   const searchCards = list.filter(function(item){
-    return item.model.toLowerCase().includes(searchTerm);
+    return filterTerm!="" ? item.model.toLowerCase().includes(searchTerm) & item.category==filterTerm: item.model.toLowerCase().includes(searchTerm);
   });
   const handleChange = (event) => {
     setPermTerm(event.target.value);
@@ -189,16 +209,24 @@ function Search(){
   const searchChange = (event) => {
     setSearchTerm(permTerm.toLowerCase());
   }
-  
+  const filterChange=(event)=> {
+    setFilterTerm(event.target.value);
+  }
   return (<div>
     <h1>My shop</h1>
-    <div class="input-group d-flex justify-content-center mb-5">
+    <div class="input-group d-flex justify-content-center mb-3">
       <div class="form-outline" >
-        <input type="search" placeholder="Search for product" class="form-control" onChange={handleChange} />
+        <input type="search" placeholder="Search for product" class="form-control shadow-none" onChange={handleChange} />
       </div>
       <button onClick={searchChange} type="button" class="btn btn-warning">
         <i class="bi bi-search"></i>
       </button>
+      <div class="form-outline mx-2">
+      <select class="form-select shadow-none" aria-label="Choose category" onChange={filterChange}>
+          <option value=''>Choose the category</option>
+          <ListCategories list={categories}/>
+      </select>
+      </div>
     </div>
       
       <ListTechnologies list={searchCards}/>
@@ -213,7 +241,7 @@ const ListTechnologies = (props) =>{
         {
           return <Col className='col-4' key={item.article_number} style={{alignItems:'center'}}>
            
-    <div class="row justify-content-center">
+    <div class="row justify-content-center mt-2">
       <div class="col-md-9 col-lg-6 col-xl-8">
         <div class="card" style={{borderRadius: '15 px'}}>
           <div class="bg-image hover-overlay ripple ripple-surface ripple-surface-light"
@@ -263,7 +291,13 @@ const ListTechnologies = (props) =>{
     </div>
   );
 }
-
+const ListCategories = (props) => {
+  return( <>
+    {props.list.map(function(item){
+      return <option>{item}</option>
+    })}
+  </>);
+}
 function App(){
     return(
         <div className = "App">
