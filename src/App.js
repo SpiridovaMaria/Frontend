@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './App.css';
 import HelloWorld from './laba_1';
 import { useState } from 'react';
@@ -9,6 +9,7 @@ import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import ListGroup from 'react-bootstrap/ListGroup';
 
+// 1 продукт
 const Product = {
     article_number: 35472835,
     model: 'W NIKE TECH HERA',
@@ -16,7 +17,7 @@ const Product = {
     price: 110,
     rate: '4.0',
 }
-
+// карточка для админа с вводом инфорации + карточка для покупателя
 class Product_profile extends Component{
   constructor(props){
     super(props);
@@ -76,6 +77,7 @@ class Product_profile extends Component{
               </div>
             </div>
           </div>
+
           <div class="container py-5 fs-4">
             <div class="row justify-content-center">
               <div class="col-md-9 col-lg-6 col-xl-5">
@@ -143,6 +145,8 @@ class Test extends Component{
       )
     }
 }
+
+// данные продуктов
 const list = [
   {
     article_number: 35472835,
@@ -193,47 +197,123 @@ const list = [
     url:'https://a.lmcdn.ru/product/M/P/MP002XW0MUYC_22979224_2_v1.jpg',
   },
 ];
+//поиск + фильтрация продуктов по категориям
 function Search(){
   const categories = Array.from(new Set(list.map(function(item){
     return item.category;
   })));
+
+  const useStorage = (initState,key) => {
+    const[valueTerm,setValueTerm] = useState(localStorage.getItem(key) || initState);
+    useEffect(() => {
+      localStorage.setItem(key, valueTerm);
+    },[valueTerm]);
+    return [valueTerm,setValueTerm];
+  }
+  const useSwitch = (initState) => {
+    const[valueTerm,setValueTerm] = useState(initState);
+    const change = () =>{
+      setValueTerm(!valueTerm);
+    }
+    return [valueTerm,change];
+  }
+  const[isShown,setIsShown] = useSwitch(true);
   const[searchTerm, setSearchTerm] = useState('');
-  const[permTerm, setPermTerm] = useState('');
+  const[searchPermTerm, setSearchPermTerm] = useState('');
   const[filterTerm,setFilterTerm] = useState('');
+  const[loginTerm,setLoginTerm] = useStorage('client','login');
+  const[loginPermTerm, setLoginPermTerm] = useState('');
+
   const searchCards = list.filter(function(item){
     return filterTerm!="" ? item.model.toLowerCase().includes(searchTerm) & item.category==filterTerm: item.model.toLowerCase().includes(searchTerm);
   });
-  const handleChange = (event) => {
-    setPermTerm(event.target.value);
+
+  const handleSearchChange = (event) => {
+    setSearchPermTerm(event.target.value);
   }
   const searchChange = (event) => {
-    setSearchTerm(permTerm.toLowerCase());
+    setSearchTerm(searchPermTerm);
   }
   const filterChange=(event)=> {
     setFilterTerm(event.target.value);
   }
+
+  const handleLoginChange = (event) => {
+    setLoginPermTerm(event.target.value);
+  }
+  const loginChange = (event) => {
+    setLoginTerm(loginPermTerm);
+  }
+  const loginDelete = (event) => {
+    localStorage.clear();
+    localStorage.removeItem("basket");
+    setLoginTerm('client');
+  }
+
+
   return (<div>
     <h1>My shop</h1>
-    <div class="input-group d-flex justify-content-center mb-3">
-      <div class="form-outline" >
-        <input type="search" placeholder="Search for product" class="form-control shadow-none" onChange={handleChange} />
-      </div>
-      <button onClick={searchChange} type="button" class="btn btn-warning">
-        <i class="bi bi-search"></i>
+    <div>
+      {
+        isShown &&(<div class="alert alert-warning" role="alert">
+        Our team are glad to see you in our shop. There are a lot sales now, so don't miss them!
+        <button onClick={setIsShown} type="button" class="btn">
+        <i class="bi bi-x"></i>
       </button>
-      <div class="form-outline mx-2">
-      <select class="form-select shadow-none" aria-label="Choose category" onChange={filterChange}>
-          <option value=''>Choose the category</option>
-          <ListCategories list={categories}/>
-      </select>
-      </div>
+      </div>)
+      }
+      
+    </div>
+    <div class="input-group d-flex justify-content-center mb-3">
+       
+          {
+            loginTerm==='client' &&(
+            <>
+              <div class="form-outline" >
+                <input type="text" placeholder="Input your name" id="login" class="form-control shadow-none" onChange={handleLoginChange} />
+              </div>
+              <button onClick={loginChange} type="button" class="btn btn-primary">
+              <i class="bi bi-box-arrow-in-right"></i>
+              </button>
+        </>)
+          }
+         {
+            loginTerm!=='client' &&(
+            <>
+              <div class="form-outline mx-3 text-danger" >
+                <h4>{loginTerm}</h4>
+              </div>
+              <button onClick={loginDelete} type="button" class="btn btn-danger">
+              <i class="bi bi-door-closed"></i>
+              </button>
+        </>)
+          }
+       
+    </div> 
+
+    <div class="input-group d-flex justify-content-center mb-3">
+       <div class="form-outline" >
+            <input type="search" placeholder="Search for product" class="form-control shadow-none" onChange={handleSearchChange} />
+          </div>
+          <button onClick={searchChange} type="button" class="btn btn-warning">
+            <i class="bi bi-search"></i>
+          </button>
+          <div class="form-outline mx-2">
+          <select class="form-select shadow-none" aria-label="Choose category" onChange={filterChange}>
+              <option value=''>Choose the category</option>
+              <ListCategories list={categories}/>
+          </select>
+        </div>
     </div>
       
       <ListTechnologies list={searchCards}/>
     </div>
   );
 }
+
+// карточки продуктов
 const ListTechnologies = (props) =>{
+
   return(
     <div>
       <Row>
@@ -242,6 +322,7 @@ const ListTechnologies = (props) =>{
           return <Col className='col-4' key={item.article_number} style={{alignItems:'center'}}>
            
     <div class="row justify-content-center mt-2">
+
       <div class="col-md-9 col-lg-6 col-xl-8">
         <div class="card" style={{borderRadius: '15 px'}}>
           <div class="bg-image hover-overlay ripple ripple-surface ripple-surface-light"
@@ -278,7 +359,8 @@ const ListTechnologies = (props) =>{
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center pb-2 mb-1">
               <a href="#!" class="text-danger fw-bold">Cancel</a>
-              <button type="button" class="btn btn-warning btn-lg fw-bold">Buy now</button>
+              <button type="button" class="btn btn-warning btn-lg fw-bold">
+                Buy now</button>
             </div>
           </div>
         </div>
@@ -291,6 +373,8 @@ const ListTechnologies = (props) =>{
     </div>
   );
 }
+
+// список категорий
 const ListCategories = (props) => {
   return( <>
     {props.list.map(function(item){
@@ -298,6 +382,7 @@ const ListCategories = (props) => {
     })}
   </>);
 }
+
 function App(){
     return(
         <div className = "App">
